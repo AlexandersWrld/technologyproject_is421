@@ -24,21 +24,38 @@ jobs:
         run: npm install
         working-directory: ./app
 
-      - name: Create Environment File
+      - name: Create Environment Files
         run: |
           mkdir -p src/environments
-          echo "export const environment = { 
+          
+          # Weather Config Content
+          WEATHER_CONTENT="export const environment = { 
             production: true, 
             apiKey: '${{ secrets.WEATHER_API_KEY }}', 
             apiUrl: 'https://api.openweathermap.org/data/2.5/weather', 
             iconUrl: 'https://openweathermap.org/img/wn' 
-          };" > src/environments/environment.weather.ts
-          echo "export const environment = { production: true };" > src/environments/environment.ts
+          };"
+          
+          # Main Config Content
+          MAIN_CONTENT="export const environment = { production: true };"
+
+          # Create all required files for production build
+          echo "$WEATHER_CONTENT" > src/environments/environment.weather.ts
+          echo "$WEATHER_CONTENT" > src/environments/environment.weather.prod.ts
+          echo "$MAIN_CONTENT" > src/environments/environment.ts
+          echo "$MAIN_CONTENT" > src/environments/environment.prod.ts
         working-directory: ./app
 
       - name: Build Project
         run: npx ng build --configuration=production
         working-directory: ./app
+
+      - name: Pull Vercel Environment Info
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: ./app
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Deploy to Vercel
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
