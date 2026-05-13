@@ -19,6 +19,7 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
+        working-directory: ./app
 
       - name: Create Environment File
         run: |
@@ -32,7 +33,7 @@ jobs:
           
           # Also create the default environment.ts for main.ts
           echo "export const environment = { production: true };" > src/environments/environment.ts
-
+        working-directory: ./app  
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20
         with:
