@@ -1,0 +1,42 @@
+name: Deploy Weather App to Vercel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Create Environment File
+        run: |
+          mkdir -p src/environments
+          echo "export const environment = { 
+            production: true, 
+            apiKey: '${{ secrets.WEATHER_API_KEY }}', 
+            apiUrl: 'https://api.openweathermap.org/data/2.5/weather', 
+            iconUrl: 'https://openweathermap.org/img/wn' 
+          };" > src/environments/environment.weather.ts
+          
+          # Also create the default environment.ts for main.ts
+          echo "export const environment = { production: true };" > src/environments/environment.ts
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
