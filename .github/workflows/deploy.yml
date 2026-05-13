@@ -30,10 +30,15 @@ jobs:
             apiUrl: 'https://api.openweathermap.org/data/2.5/weather', 
             iconUrl: 'https://openweathermap.org/img/wn' 
           };" > src/environments/environment.weather.ts
-          
-          # Also create the default environment.ts for main.ts
           echo "export const environment = { production: true };" > src/environments/environment.ts
-        working-directory: ./app  
+        working-directory: ./app
+
+      # STEP 1: You MUST build the app to create the dist folder
+      - name: Build Project
+        run: npx ng build --configuration=production
+        working-directory: ./app
+
+      # STEP 2: Deploy ONLY the compiled browser files
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20
         with:
@@ -41,3 +46,7 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
+          # This tells Vercel where the package.json is
+          working-directory: ./app
+          # This tells Vercel where the BUILT files are
+          vercel-args: '--prod --cwd ./app'
